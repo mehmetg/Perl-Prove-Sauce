@@ -7,28 +7,23 @@ use Selenium::Firefox;
 use Selenium::Remote::Driver;
 use LWP::UserAgent;
 use HTTP::Request;
+use threads::shared;
 
 # use ENV qw(SAUCE_USERNAME SAUCE_ACCESS_KEY);
 
-use Exporter qw(import);
-use Exporter qw(import);
-
-#our @EXPORT_OK = qw(get_driver);
-#our @EXPORT_OK = qw(get_driver);
+my $my_lock :shared = 0;
 my $target = $ENV{'TARGET'};
 my $sauce_server = 'ondemand.saucelabs.com';
 my $sauce_api_server = 'saucelabs.com';
 
 sub get_driver(){
     my ($self, $desc) = @_;
-    if (!$target) {
-        $target = 'firefox';
-    }
 
     my $driver = undef;
+    lock($my_lock);
     switch ($target) {
-        case "firefox"  { $driver =  Selenium::Firefox->new() }
         case "sauce"    { $driver = _get_sauce_driver($desc) }
+        else            { $driver =  Selenium::Firefox->new() }
     }
     return $driver;
 }
@@ -37,7 +32,7 @@ sub _get_sauce_driver(){
     my ($desc) = @_;
 
     my $host = "$ENV{'SAUCE_USERNAME'}:$ENV{'SAUCE_ACCESS_KEY'}\@$sauce_server";
-    my $driver = new Selenium::Remote::Driver(
+    my $rdriver = new Selenium::Remote::Driver(
         'remote_server_addr' => $host,
         'port' => "80",
         'browser_name' => "chrome",
@@ -45,12 +40,12 @@ sub _get_sauce_driver(){
         'platform' => "Windows 10",
         'extra_capabilities' => {'name' => $desc},
     );
-    return $driver;
+    return $rdriver;
 }
 
 sub set_job_result() {
-    my ($self, $driver, $result) = @_;
-    my $session_id = $driver->get_capabilities()->{'webdriver.remote.sessionid'};
+    my ($self, $rdriver, $result) = @_;
+    my $session_id = $rdriver->get_capabilities()->{'webdriver.remote.sessionid'};
     switch ($target) {
         case "sauce"    {
             my $username = $ENV{'SAUCE_USERNAME'};
@@ -72,7 +67,7 @@ sub set_job_result() {
             $ua->request($req)->as_string;
         }
 
-        else       { print("Running local nothing to update!") }
+        else       { print("Running local nothing to update!\n") }
 
     }
 }

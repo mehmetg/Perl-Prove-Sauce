@@ -11,7 +11,6 @@ sub testCheckBox() {
     my $desc = "Testing checkbox state!";
 
     my $driver = DriverFactory->get_driver($desc);
-
     $driver->set_implicit_wait_timeout(10);
     $driver->get('https://saucelabs.com/test/guinea-pig');
     my $checkBox = $driver->find_element('checked_checkbox', 'id');

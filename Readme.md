@@ -21,8 +21,12 @@ Using Sauce Labs with Perl
         * "firefox" or blank  for local runs
         * "sauce" for Sauce Labs runs.
         
-## Run tests:
+## Runing Tests:
 Use the command below fromt the root of the project. For serial runs you should omit the "-jX" flag.
 <pre>prove -jX</pre>
 X : number of concurrent tests. 
 Each test definition file (*.t) will be run in a different thread.
+
+## Known Issues:
+The Selenium::Firefox package has concurrency issues and will not run right for parallel tests. Sauce labs target 
+runs without issues. 
